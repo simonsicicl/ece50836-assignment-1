@@ -36,6 +36,21 @@ def pca(dataMat, PC_num=2):
     Output:
         lowDDataMat: the 2-d data after PCA transformation
     '''
+
+    X = array(dataMat, dtype=float)
+    X_centered = X - X.mean(axis=0)
+    covariances = cov(X_centered, rowvar=False)
+
+    eigVals, eigVecs = linalg.eigh(covariances)
+    # print("Eigenvalues:\n", eigVals)
+    # print("Eigenvectors:\n", eigVecs)
+
+    sort_idx = argsort(eigVals)[::-1]
+    eigVec_sorted = eigVecs[:, sort_idx]
+    W = -eigVec_sorted[:, :PC_num]
+
+    lowDDataMat =  X_centered @ W
+
     return array(lowDDataMat)
 
 
@@ -47,6 +62,25 @@ def plot(lowDDataMat, labelMat, figname):
     '''
 
     
+    lowDDataMat = array(lowDDataMat)
+    labelMat = array(labelMat)
+
+    plt.figure(figsize=(6.5, 5.0), dpi=120)
+    
+    labels = unique(labelMat)
+    cmap = plt.get_cmap('tab10')
+    colors = {lbl: cmap(i % 10) for i, lbl in enumerate(labels)}
+
+    for lbl in labels:
+        idx = labelMat == lbl
+        plt.scatter(lowDDataMat[idx, 0], lowDDataMat[idx, 1], s=25, c=[colors[lbl]])
+
+    plt.xlabel('PC1')
+    plt.ylabel('PC2')
+    plt.title('PCA')
+    plt.tight_layout()
+    plt.savefig(figname)
+    plt.close()
 
 
 if __name__ == '__main__':
